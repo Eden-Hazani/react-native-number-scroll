@@ -1,6 +1,6 @@
 {
   "name": "react-native-number-scroll",
-  "version": "1.0.6",
+  "version": "1.0.93",
   "description": "react native number scroller",
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -17,6 +17,20 @@
     "type": "git",
     "url": "git+https://github.com/Eden-Hazani/react-native-number-scroll.git"
   },
+  "keywords": [
+    "react-native",
+    "react-component",
+    "react-native-component",
+    "react",
+    "react native",
+    "mobile",
+    "ios",
+    "android",
+    "ui",
+    "stepper",
+    "progress",
+    "progress-steps"
+  ],
   "author": "Eden Hazani",
   "license": "ISC",
   "bugs": {
@@ -24,13 +38,6 @@
   },
   "homepage": "https://github.com/Eden-Hazani/react-native-number-scroll#readme",
   "dependencies": {
-    "@expo/vector-icons": "^12.0.5",
-    "@types/react": "^17.0.38",
-    "@types/react-native": "^0.66.10",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "react-native": "^0.66.4",
-    "react-native-modal": "^13.0.0",
-    "typescript": "^4.5.4"
+    "@expo/vector-icons": "^12.0.5"
   }
 }

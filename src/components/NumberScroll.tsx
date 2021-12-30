@@ -1,17 +1,11 @@
 import React , { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRef } from 'react';
-import { View, StyleSheet, Animated, Dimensions, TouchableOpacity, ViewToken } from 'react-native';
+import { View, StyleSheet, Animated, Dimensions, TouchableOpacity, ViewToken,TextStyle } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import generateArr from '../util/generateArr';
 const { width } = Dimensions.get('window');
 
 type NumberScrollProps = {
-    /**
-     *  Arguments: `number`
-     *  
-     *  Font size of the items
-     */
-    letterSize?: number;
     /**
      *  Arguments: `boolean`
      *  
@@ -40,8 +34,9 @@ type NumberScrollProps = {
      *  Arguments: `number`
      *  
      *  The position value that the scroll will start at
+     *  if not filled scroll will start at min
      */
-    startingValue:number;
+    startingValue?:number;
     /**
      *  Arguments: `val : any`
      *  
@@ -65,10 +60,16 @@ type NumberScrollProps = {
      *  if the number changes the new change will be injected to the state 
      */
     injectValue?:number;
+    /** 
+     *  Arguments: `TextStyle`
+     * 
+     *  Style of the scroll font
+     */
+    fontStyle?:TextStyle;
 
 }
 
-const Item: React.FC<any> = ({ item, scrollX, index, scrollerWidth, letterSize }) => {
+const Item: React.FC<any> = ({ item, scrollX, index, scrollerWidth, fontStyle }) => {
     const inputRange = [(index - 1) * scrollerWidth, index * scrollerWidth, (index + 1) * scrollerWidth];
     const scale = scrollX.interpolate({
         inputRange,
@@ -77,16 +78,16 @@ const Item: React.FC<any> = ({ item, scrollX, index, scrollerWidth, letterSize }
 
     return <View style={[styles.item,{width:scrollerWidth}]}>
         <Animated.Text style={{
-            fontSize: letterSize ? letterSize : 25,
+            ...fontStyle,
             transform: [{ scale: scale }]
         }}>{item}</Animated.Text>
     </View>
 }
 
 const NumberScroll: React.FunctionComponent<NumberScrollProps> = ({
-    letterSize, AddSideButtons,injectValue,
+     AddSideButtons,injectValue,
     pauseStart, min, max, getValue,startingValue,
-    scrollerWidth, onPress }) => {
+    scrollerWidth, onPress,fontStyle }) => {
         
         const numberArray = useMemo(() => generateArr(min,max,startingValue), [min,max,startingValue]);
         const scrollWidth = scrollerWidth ? scrollerWidth : (width/3);
@@ -131,7 +132,7 @@ const NumberScroll: React.FunctionComponent<NumberScrollProps> = ({
         const RenderItem = useCallback(({ item,index }) => {
             return (
                 <TouchableOpacity onPress={()=>onPress && onPress() }>
-                    <Item item={item} scrollX={scrollX} letterSize={letterSize} scrollerWidth={scrollWidth} index={index} />
+                    <Item fontStyle={fontStyle} item={item} scrollX={scrollX} scrollerWidth={scrollWidth} index={index} />
                 </TouchableOpacity>
             );
         }, []);
