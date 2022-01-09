@@ -7,45 +7,38 @@ const { width } = Dimensions.get('window');
 
 type NumberScrollProps = {
     /**
-     *  Arguments: `boolean`
-     *  
+     *  @param AddSideButtons:boolean
      *  Adds clickable buttons at the sides of the scroll allowing incremental clicks
      */
     AddSideButtons?: boolean;
     /**
-     *  Arguments: `boolean`
-     *  
+     *  @param pauseStart:boolean
      *  skip getValue at render
      */
     pauseStart?: boolean;
     /**
-     *  Arguments: `number`
-     *  
+     *  @param min:number
      *  minimum value of the scroll
      */
     min: number;
     /**
-     *  Arguments: `number`
-     *  
+     *  @param max:number
      *  maximum value of the scroll
      */
     max: number;
     /**
-     *  Arguments: `number`
-     *  
+     *  @param startingValue:number
      *  The position value that the scroll will start at
      *  if not filled scroll will start at min
      */
     startingValue?:number;
     /**
-     *  Arguments: `val : any`
-     *  
+     *  @param value:number 
      *  Callback returning the current value shown in the scroll
      */
     getValue: (value: number) => void;
     /**
-     *  Arguments: `number`
-     *  
+     *  @param scrollerWidth:number 
      *  Width of the scroll item
      */
     scrollerWidth?: number;
@@ -54,15 +47,15 @@ type NumberScrollProps = {
      */
     onPress?: () => void;
     /** 
-     *  Arguments: `number`
-     * 
-     *  Inject a new value to the current scroll state
-     *  if the number changes the new change will be injected to the state 
+     * @param injectValue:number 
+     *  The current item you wish to auto scroll to
+     * @example
+     * const handleClick = () =>setIncrement(newValue);    
+     * injectValue={increment} 
      */
     injectValue?:number;
     /** 
-     *  Arguments: `TextStyle`
-     * 
+     * @param injectValue:TextStyle 
      *  Style of the scroll font
      */
     fontStyle?:TextStyle;
@@ -85,7 +78,7 @@ const Item: React.FC<any> = ({ item, scrollX, index, scrollerWidth, fontStyle })
 }
 
 const NumberScroll: React.FunctionComponent<NumberScrollProps> = ({
-     AddSideButtons,injectValue,
+    AddSideButtons,injectValue,
     pauseStart, min, max, getValue,startingValue,
     scrollerWidth, onPress,fontStyle }) => {
         
@@ -93,9 +86,14 @@ const NumberScroll: React.FunctionComponent<NumberScrollProps> = ({
         const scrollWidth = scrollerWidth ? scrollerWidth : (width/3);
     
         const [primeIndex, setPrimeIndex] = useState(startingValue ? numberArray.indexOf(startingValue) : min);
-    
+
         const scrollX = React.useRef(new Animated.Value(0)).current;
         const moveIndexRef = React.useRef<any>(null);
+
+        useEffect(() => {
+            if(!injectValue) return;
+            indexScroll(numberArray.indexOf(injectValue));
+        },[injectValue])
         
         useEffect(() => {
             if (!pauseStart) getValue(startingValue ? startingValue : min);
@@ -103,6 +101,7 @@ const NumberScroll: React.FunctionComponent<NumberScrollProps> = ({
         }, []);
         
         const indexScroll=(index:number)=> moveIndexRef.current.scrollToIndex({ animation: false, index });
+        
         
         const onViewRef = useRef(({ viewableItems }:{viewableItems:ViewToken[]}) => {
             if (viewableItems[0]) {
@@ -136,16 +135,6 @@ const NumberScroll: React.FunctionComponent<NumberScrollProps> = ({
                 </TouchableOpacity>
             );
         }, []);
-    
-        useEffect(()=>{
-            const injectIncrement=(increment:number)=>{ 
-                if (increment < 0 || increment >= numberArray.length) return;
-                indexScroll(increment);
-                setPrimeIndex(increment);
-                getValue(increment + 1);
-            }
-            injectValue && injectIncrement(injectValue)
-        },[injectValue])
     
     return (
         <View style={styles.container}>
