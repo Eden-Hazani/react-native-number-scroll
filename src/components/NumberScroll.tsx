@@ -91,7 +91,7 @@ const NumberScroll: React.FunctionComponent<NumberScrollProps> = ({
         const moveIndexRef = React.useRef<any>(null);
 
         useEffect(() => {
-            if(!injectValue) return;
+            if(!injectValue || injectValue<min || injectValue>max) throw new Error('Invalid injected value');
             indexScroll(numberArray.indexOf(injectValue));
         },[injectValue])
         
