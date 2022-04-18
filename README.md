@@ -26,4 +26,6 @@ I am planing on addeing more functionality to this library soon.
  onPress?: Callback on press of the button () => void
  
  injectValue? Inject a new value to the current scroll state,if the number changes the new change will be injected to the state (number)
+
+ sideButtonColor? hex of the wanted side button color (string)
   

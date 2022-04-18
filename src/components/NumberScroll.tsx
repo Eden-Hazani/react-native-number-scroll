@@ -60,6 +60,14 @@ type NumberScrollProps = {
      */
     fontStyle?:TextStyle;
 
+    /** 
+     * @param sideButtonColor:string 
+     *  hex of the wanted side button color
+     */
+    sideButtonColor?:string;
+
+
+
 }
 
 const Item: React.FC<any> = ({ item, scrollX, index, scrollerWidth, fontStyle }) => {
@@ -78,7 +86,7 @@ const Item: React.FC<any> = ({ item, scrollX, index, scrollerWidth, fontStyle })
 }
 
 const NumberScroll: React.FunctionComponent<NumberScrollProps> = ({
-    AddSideButtons,injectValue,
+    AddSideButtons,injectValue,sideButtonColor,
     pauseStart, min, max, getValue,startingValue,
     scrollerWidth, onPress,fontStyle }) => {
         
@@ -91,7 +99,8 @@ const NumberScroll: React.FunctionComponent<NumberScrollProps> = ({
         const moveIndexRef = React.useRef<any>(null);
 
         useEffect(() => {
-            if(!injectValue || injectValue<min || injectValue>max) throw new Error('Invalid injected value');
+            if(injectValue === undefined || injectValue === null) return
+            if( injectValue<min || injectValue>max ) throw new Error('Invalid injected value');
             indexScroll(numberArray.indexOf(injectValue));
         },[injectValue])
         
@@ -139,7 +148,7 @@ const NumberScroll: React.FunctionComponent<NumberScrollProps> = ({
     return (
         <View style={styles.container}>
             {AddSideButtons && <TouchableOpacity onPress={() => setIndex(primeIndex - 1)}>
-                <MaterialCommunityIcons name={'chevron-left'} color={'black'} size={25} />
+                <MaterialCommunityIcons name={'chevron-left'} color={sideButtonColor ? sideButtonColor:'black'} size={25} />
             </TouchableOpacity>}
             <View style={{ width: scrollWidth }}>
                 <Animated.FlatList
@@ -163,7 +172,7 @@ const NumberScroll: React.FunctionComponent<NumberScrollProps> = ({
                     renderItem={({ item, index }) => <RenderItem item={item} index={index}/>} />
             </View>
             {AddSideButtons && <TouchableOpacity onPress={() => setIndex(primeIndex + 1)}>
-                <MaterialCommunityIcons name={'chevron-right'} color={'black'} size={25} />  
+                <MaterialCommunityIcons name={'chevron-right'} color={sideButtonColor ? sideButtonColor:'black'} size={25} />  
             </TouchableOpacity>}
         </View>
     )
