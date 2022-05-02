@@ -33,6 +33,12 @@ type NumberScrollProps = {
      */
     startingValue?:number;
     /**
+     *  @param startingIndex:number
+     *  The index value that the scroll will start at
+     *  if not filled scroll will start at min (overrides startingValue)
+     */
+    startingIndex?:number;
+    /**
      *  @param value:number 
      *  Callback returning the current value shown in the scroll
      */
@@ -61,12 +67,10 @@ type NumberScrollProps = {
     fontStyle?:TextStyle;
 
     /** 
-     * @param sideButtonColor:string 
-     *  hex of the wanted side button color
+     * @param sideButtonStyle:{color:string,size:number} 
+     *  object containing the color and size of the side buttons
      */
-    sideButtonColor?:string;
-
-
+    sideButtonStyle?:{color:string,size:number};
 
 }
 
@@ -85,15 +89,19 @@ const Item: React.FC<any> = ({ item, scrollX, index, scrollerWidth, fontStyle })
     </View>
 }
 
+const RenderSideButton : React.FC<any> = ({onPress,color,size,side}:{side:'chevron-left'|'chevron-right',onPress:()=>void,color:string,size:number}) => <TouchableOpacity onPress={() => onPress() }>
+    <MaterialCommunityIcons name={side} color={color} size={size} />
+</TouchableOpacity>
+
 const NumberScroll: React.FunctionComponent<NumberScrollProps> = ({
-    AddSideButtons,injectValue,sideButtonColor,
+    AddSideButtons,injectValue,sideButtonStyle,startingIndex,
     pauseStart, min, max, getValue,startingValue,
     scrollerWidth, onPress,fontStyle }) => {
         
         const numberArray = useMemo(() => generateArr(min,max,startingValue), [min,max,startingValue]);
         const scrollWidth = scrollerWidth ? scrollerWidth : (width/3);
     
-        const [primeIndex, setPrimeIndex] = useState(startingValue ? numberArray.indexOf(startingValue) : min);
+        const [primeIndex, setPrimeIndex] = useState(min);
 
         const scrollX = React.useRef(new Animated.Value(0)).current;
         const moveIndexRef = React.useRef<any>(null);
@@ -105,8 +113,15 @@ const NumberScroll: React.FunctionComponent<NumberScrollProps> = ({
         },[injectValue])
         
         useEffect(() => {
-            if (!pauseStart) getValue(startingValue ? startingValue : min);
-            if(startingValue) indexScroll(primeIndex);
+            if (!pauseStart) getValue(startingValue  !== undefined ? startingValue : min);
+            if(startingIndex !== undefined){
+                indexScroll(startingIndex)
+                return
+            }
+            if(startingValue !== undefined){
+                indexScroll(primeIndex);
+                setPrimeIndex(numberArray.indexOf(startingValue));
+            }
         }, []);
         
         const indexScroll=(index:number)=> moveIndexRef.current.scrollToIndex({ animation: false, index });
@@ -137,18 +152,23 @@ const NumberScroll: React.FunctionComponent<NumberScrollProps> = ({
             indexScroll(newIndex)
         }
     
-        const RenderItem = useCallback(({ item,index }) => {
+        const RenderItem = useCallback(({ item,index }:any) => {
             return (
                 <TouchableOpacity onPress={()=>onPress && onPress() }>
                     <Item fontStyle={fontStyle} item={item} scrollX={scrollX} scrollerWidth={scrollWidth} index={index} />
                 </TouchableOpacity>
             );
         }, []);
+
     
     return (
         <View style={styles.container}>
             {AddSideButtons && <TouchableOpacity onPress={() => setIndex(primeIndex - 1)}>
-                <MaterialCommunityIcons name={'chevron-left'} color={sideButtonColor ? sideButtonColor:'black'} size={25} />
+                <RenderSideButton 
+                    {...sideButtonStyle}
+                    side='chevron-left'
+                    onPress={() => setIndex(primeIndex - 1)}
+                />
             </TouchableOpacity>}
             <View style={{ width: scrollWidth }}>
                 <Animated.FlatList
@@ -172,7 +192,11 @@ const NumberScroll: React.FunctionComponent<NumberScrollProps> = ({
                     renderItem={({ item, index }) => <RenderItem item={item} index={index}/>} />
             </View>
             {AddSideButtons && <TouchableOpacity onPress={() => setIndex(primeIndex + 1)}>
-                <MaterialCommunityIcons name={'chevron-right'} color={sideButtonColor ? sideButtonColor:'black'} size={25} />  
+                <RenderSideButton
+                    {...sideButtonStyle}
+                    side='chevron-right'
+                    onPress={() => setIndex(primeIndex + 1)}
+                />
             </TouchableOpacity>}
         </View>
     )
