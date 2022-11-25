@@ -8,27 +8,111 @@ import generateArr from '../util/generateArr';
 import NumberEngineItem from "./NumberEngineItem";
 
 interface NumberScrollProps{
+    /**
+     *  @param max:boolean
+     *  The maximum number that can be reached
+     */
     max:number;
+    /**
+     * @param min:boolean
+     * The minimum number that can be reached
+     *  
+     * @default undefined
+     */
     min:number;
-    disableManualWindow?:boolean;
+    /**
+     * @param scrollerWidth:number
+     * The width of the scroller
+     * 
+     * @default 300
+     */
     scrollerWidth?:number;
+    /**
+     * @param startingIndex:number
+     * The starting index of the scroller
+     * 
+     * @default undefined
+     */
     startingIndex?:number;
+    /**
+     * @param startingValue:number
+     * The starting value of the scroller (overrides startingIndex)
+     *  
+     * @default undefined
+     */
     startingValue?:number;
+    /**
+     * @param numberStyles:TextStyle
+     * The styles of the numbers
+     * 
+     * @default undefined
+     */
     numberStyles?:TextStyle;
+    /**
+     * @param getValue:(val:number)=>void
+     * The function that is called when the value changes, returning the value 
+     */
     getValue:(val:number)=>void;
-    modelStyle?:ViewStyle;
+    /**
+     * @param itemMargin:number
+     * The margin of the scroller items
+     *  
+     * @default 2
+     */
     itemMargin?:number;
+    /**
+     * @param injectedValue:number
+     * if this value changes the scroller will auto-scroll to the index of that value in the array.
+     * 
+     * @default undefined
+     */
     injectedValue?:number;
+    /**
+     * @param AddSideButtons:number
+     * if this value is true, the scroller will have side buttons to increment and decrement the value
+     *  
+     * @default false
+     */
     AddSideButtons?:boolean;
+    /**
+     * @param sideButtonOptions:Object
+     * Additional options for the side buttons
+     *  
+     * @default undefined
+     */
     sideButtonOptions?:{
         leftName?:keyof typeof MaterialCommunityIcons.glyphMap;
         rightName?:keyof typeof MaterialCommunityIcons.glyphMap;
         size?:number;
         color?:string;
     };
+    /**
+     * @param pauseStart:boolean
+     * if this value is true, the scroller will not return value on mount
+     * 
+     * @default false
+     */
     pauseStart?:boolean;
+    /**
+     * @param listContainerStyle:ViewStyle
+     * The style of the list container
+     * 
+     * @default undefined
+     */
     listContainerStyle?:ViewStyle;
+    /**
+     * @param showIndicator:boolean
+     * if this value is true, the scroller will show an indicator
+     *  
+     * @default false
+     */
     showIndicator?:boolean;
+    /**
+     * @param indicatorStyle:ViewStyle
+     * The style of the indicator
+     * 
+     * @default undefined
+     */
     indicatorStyle?:TextStyle;
 }
 
