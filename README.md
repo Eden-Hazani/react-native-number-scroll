@@ -1,40 +1,39 @@
 # react-native-number-scroll
 
+Create simple animated number scroller in react native.
+
+| Prop | Type | Default | Required | Description
+| --- | :--: | :--: | --- | :--:
+| <b>max</b> | <i>number</i> | undefined | true | The maximum number that can be reached
+| <b>min</b> |  <i>number</i> | undefined | true | The minimum number that can be reached
 
 
-This library gives you the ability to create simple and beautiful number scrollers in your react-native project. 
-I am planing on addeing more functionality to this library soon. 
+#### max?: number;
+   max:number - the maximum number allowed.
 
-# Props: 
-#### AddSideButtons?: boolean;
-   AddSideButtons:boolean - Adds clickable buttons at the sides of the scroll allowing incremental clicks
-#### pauseStart?: boolean; 
-    skip getValue at render
-#### min: number;
-    min:number - minimum value of the scroll
-#### max: number;
-    max:number - maximum value of the scroll
-#### startingValue?:number;
-    startingValue:number - The position value that the scroll will start at if not filled scroll will start at min
-#### startingIndex?:number:
-    startingIndex:number - The index value that the scroll will start at if not filled scroll will start at min (overrides startingValue)
-     
-#### getValue: (value: number) => void:
-    value:number - Callback returning the current value shown in the scroll
-     
-#### scrollerWidth?: number: 
-    Width of the scroll item
+#### 
 
-#### onPress?: () => void: 
-    - Callback on press of the button 
 
-#### injectValue?:number:
-    injectValue:number - The current item you wish to auto scroll to (can be managed by state, updates on state update)
-#### fontStyle?:TextStyle:
-    injectValue:TextStyle - Style of the scroll font
 
-#### sideButtonStyle:
-    {color:string,size:number} - object containing the color and size of the side buttons.
-#### sideButtonName?:
-    {left:string,right:string} - Object containing the icon name of the side buttons (supports MaterialCommunityIcons);
-  
+ max:number;
+    min:number;
+    disableManualWindow?:boolean;
+    scrollerWidth?:number;
+    startingIndex?:number;
+    startingValue?:number;
+    numberStyles?:TextStyle;
+    getValue:(val:number)=>void;
+    modelStyle?:ViewStyle;
+    itemMargin?:number;
+    injectedValue?:number;
+    AddSideButtons?:boolean;
+    sideButtonOptions?:{
+        leftName?:keyof typeof MaterialCommunityIcons.glyphMap;
+        rightName?:keyof typeof MaterialCommunityIcons.glyphMap;
+        size?:number;
+        color?:string;
+    };
+    pauseStart?:boolean;
+    listContainerStyle?:ViewStyle;
+    showIndicator?:boolean;
+    indicatorStyle?:TextStyle;
