@@ -1,209 +1,176 @@
-import React , { useCallback, useEffect, useMemo, useState } from 'react';
-import { useRef } from 'react';
-import { View, StyleSheet, Animated, Dimensions, TouchableOpacity, ViewToken,TextStyle } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { FlatList, StyleSheet, TextStyle, TouchableOpacity, View, ViewStyle, ViewToken } from "react-native";
+import { core_moderateScale } from "../util/scalers";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import useDidUpdateEffect from "../hooks/useDidUpdateEffect";
 import generateArr from '../util/generateArr';
-const { width } = Dimensions.get('window');
+import NumberEngineItem from "./NumberEngineItem";
 
-type NumberScrollProps = {
-    /**
-     *  @param AddSideButtons:boolean
-     *  Adds clickable buttons at the sides of the scroll allowing incremental clicks
-     */
-    AddSideButtons?: boolean;
-    /**
-     *  @param pauseStart:boolean
-     *  skip getValue at render
-     */
-    pauseStart?: boolean;
-    /**
-     *  @param min:number
-     *  minimum value of the scroll
-     */
-    min: number;
-    /**
-     *  @param max:number
-     *  maximum value of the scroll
-     */
-    max: number;
-    /**
-     *  @param startingValue:number
-     *  The position value that the scroll will start at
-     *  if not filled scroll will start at min
-     */
-    startingValue?:number;
-    /**
-     *  @param startingIndex:number
-     *  The index value that the scroll will start at
-     *  if not filled scroll will start at min (overrides startingValue)
-     */
+interface NumberScrollProps{
+    max:number;
+    min:number;
+    disableManualWindow?:boolean;
+    scrollerWidth?:number;
     startingIndex?:number;
-    /**
-     *  @param value:number 
-     *  Callback returning the current value shown in the scroll
-     */
-    getValue: (value: number) => void;
-    /**
-     *  @param scrollerWidth:number 
-     *  Width of the scroll item
-     */
-    scrollerWidth?: number;
-    /** 
-     *  Callback on press of the button
-     */
-    onPress?: () => void;
-    /** 
-     * @param injectValue:number 
-     *  The current item you wish to auto scroll to
-     * @example
-     * const handleClick = () =>setIncrement(newValue);    
-     * injectValue={increment} 
-     */
-    injectValue?:number;
-    /** 
-     * @param injectValue:TextStyle 
-     *  Style of the scroll font
-     */
-    fontStyle?:TextStyle;
-
-    /** 
-     * @param sideButtonStyle:{color:string,size:number} 
-     *  object containing the color and size of the side buttons
-     */
-    sideButtonStyle?:{color:string,size:number};
-
+    startingValue?:number;
+    numberStyles?:TextStyle;
+    getValue:(val:number)=>void;
+    modelStyle?:ViewStyle;
+    itemMargin?:number;
+    injectedValue?:number;
+    AddSideButtons?:boolean;
+    sideButtonOptions?:{
+        leftName?:keyof typeof MaterialCommunityIcons.glyphMap;
+        rightName?:keyof typeof MaterialCommunityIcons.glyphMap;
+        size?:number;
+        color?:string;
+    };
+    pauseStart?:boolean;
+    listContainerStyle?:ViewStyle;
+    showIndicator?:boolean;
+    indicatorStyle?:TextStyle;
 }
 
-const Item: React.FC<any> = ({ item, scrollX, index, scrollerWidth, fontStyle }) => {
-    const inputRange = [(index - 1) * scrollerWidth, index * scrollerWidth, (index + 1) * scrollerWidth];
-    const scale = scrollX.interpolate({
-        inputRange,
-        outputRange: [0, 1, 0]
+const RenderSideButton : React.FC<any> = ({onPress,color,size,side}:{side:keyof typeof MaterialCommunityIcons.glyphMap,onPress:()=>void,color:string,size:number}) =>{
+    return(
+        <TouchableOpacity onPress={() => onPress() }>
+            <MaterialCommunityIcons name={side} color={color ? color : 'white'} size={size ? size : core_moderateScale(35)} />
+        </TouchableOpacity>
+    )
+}
+ 
+
+function NumberScroll({indicatorStyle,showIndicator,listContainerStyle,sideButtonOptions,pauseStart,AddSideButtons,injectedValue,itemMargin,startingValue,startingIndex,min,max,scrollerWidth,numberStyles,getValue}:NumberScrollProps){
+    const [currentIndex,setCurrentIndex] = useState<number>(startingIndex ? startingIndex : 0);
+    const numberArray = generateArr(min,max);
+    const scrollWidth = scrollerWidth ? scrollerWidth : core_moderateScale(300);
+    const itemWidth = scrollWidth / 3;
+    const baseItemMargin = itemMargin ? itemMargin : core_moderateScale(2);
+    const totalButtonSize = AddSideButtons ? sideButtonOptions?.size ? sideButtonOptions?.size * 2 : core_moderateScale(35) * 2 : 0;
+    const moveIndexRef = React.useRef<any>(null);
+
+    const indexScroll=(index:number)=> moveIndexRef.current.scrollToIndex({ animation: false, index });
+
+    useEffect(()=>{
+        if (!pauseStart) getValue(startingValue  !== undefined ? startingValue : min);
+        if(startingValue){
+            const index = numberArray.findIndex((val)=>val === startingValue);
+            setCurrentIndex(index);       
+        }
+        else if (startingIndex) setCurrentIndex(startingIndex);
+    },[])
+
+    useDidUpdateEffect(() => {
+        handleInjectedValue(injectedValue)
+    },[injectedValue])
+
+    const handleInjectedValue=(value:number|undefined)=>{
+        if(value === undefined) return;
+        if( value<min || value>max ) return;
+        const index = numberArray.indexOf(value);
+        if(index<0) return;
+        indexScroll(index);
+    }
+
+    const onViewRef = useRef(({ viewableItems }:{viewableItems:ViewToken[]}) => {
+        if (viewableItems.length>0 && viewableItems[0]?.index !== null) {
+            updateValue(viewableItems[0]?.index);
+        }
+    });
+
+    const updateValue=(value:number)=>{
+        getValue(numberArray[value]);
+        setCurrentIndex(value);
+    }
+
+    const viewConfigRef = React.useRef({
+        itemVisiblePercentThreshold: 50,
+        waitForInteraction: true,
+        minimumViewTime: 5
     })
 
-    return <View style={[styles.item,{width:scrollerWidth}]}>
-        <Animated.Text style={{
-            ...fontStyle,
-            transform: [{ scale: scale }]
-        }}>{item}</Animated.Text>
-    </View>
-}
+    const getItemLayout = (data: number[] | null | undefined, index:number) => (
+        { length: itemWidth + (baseItemMargin*2), offset: (itemWidth + (baseItemMargin*2)) * index, index }
+    )
 
-const RenderSideButton : React.FC<any> = ({onPress,color,size,side}:{side:'chevron-left'|'chevron-right',onPress:()=>void,color:string,size:number}) => <TouchableOpacity onPress={() => onPress() }>
-    <MaterialCommunityIcons name={side} color={color} size={size} />
-</TouchableOpacity>
-
-const NumberScroll: React.FunctionComponent<NumberScrollProps> = ({
-    AddSideButtons,injectValue,sideButtonStyle,startingIndex,
-    pauseStart, min, max, getValue,startingValue,
-    scrollerWidth, onPress,fontStyle }) => {
-        
-        const numberArray = useMemo(() => generateArr(min,max,startingValue), [min,max,startingValue]);
-        const scrollWidth = scrollerWidth ? scrollerWidth : (width/3);
+    const defineStartIndex=()=>{
+        if(startingIndex !== undefined) return startingIndex
+        if(startingValue !== undefined) return numberArray.indexOf(startingValue)
+        return 0
+    }
     
-        const [primeIndex, setPrimeIndex] = useState(min);
-
-        const scrollX = React.useRef(new Animated.Value(0)).current;
-        const moveIndexRef = React.useRef<any>(null);
-
-        useEffect(() => {
-            if(injectValue === undefined || injectValue === null) return
-            if( injectValue<min || injectValue>max ) throw new Error('Invalid injected value');
-            indexScroll(numberArray.indexOf(injectValue));
-        },[injectValue])
-        
-        useEffect(() => {
-            if (!pauseStart) getValue(startingValue  !== undefined ? startingValue : min);
-            if(startingIndex !== undefined){
-                indexScroll(startingIndex)
-                return
-            }
-            if(startingValue !== undefined){
-                indexScroll(primeIndex);
-                setPrimeIndex(numberArray.indexOf(startingValue));
-            }
-        }, []);
-        
-        const indexScroll=(index:number)=> moveIndexRef.current.scrollToIndex({ animation: false, index });
-        
-        
-        const onViewRef = useRef(({ viewableItems }:{viewableItems:ViewToken[]}) => {
-            if (viewableItems[0]) {
-                getValue(viewableItems[0]?.item)
-                setPrimeIndex(viewableItems[0].index || 0)
-            }
-        });
-    
-        const viewConfigRef = React.useRef({
-            itemVisiblePercentThreshold: 50,
-            waitForInteraction: true,
-            minimumViewTime: 5
-        })
-    
-        const getItemLayout = (data: number[] | null | undefined, index:number) => (
-            { length: scrollWidth, offset: scrollWidth * index, index }
-        )
-    
-        const setIndex = (newIndex:number) => {
-            const regex = new RegExp("^[0-9]+$")
-            if (!regex.test(newIndex.toString())) return;
-            setPrimeIndex(newIndex)
-            getValue(newIndex + 1)
-            indexScroll(newIndex)
+    const manualDecrement = (action:'add'|'deduct') => {
+        if(action === 'add'){
+            if(currentIndex === numberArray.length-1) return;
+            setCurrentIndex(PS=>PS+1);
+            indexScroll(currentIndex+1);
+            getValue(numberArray[currentIndex+1]);
         }
-    
-        const RenderItem = useCallback(({ item,index }:any) => {
-            return (
-                <TouchableOpacity onPress={()=>onPress && onPress() }>
-                    <Item fontStyle={fontStyle} item={item} scrollX={scrollX} scrollerWidth={scrollWidth} index={index} />
-                </TouchableOpacity>
-            );
-        }, []);
+        else if (action === 'deduct'){
+            if(currentIndex === 0) return;
+            setCurrentIndex(PS=>PS-1);
+            indexScroll(currentIndex-1);
+            getValue(numberArray[currentIndex-1]);
+        }
+    }
 
-    
-    return (
-        <View style={styles.container}>
-            {AddSideButtons && <TouchableOpacity onPress={() => setIndex(primeIndex - 1)}>
-                <RenderSideButton 
-                    {...sideButtonStyle}
-                    side='chevron-left'
-                    onPress={() => setIndex(primeIndex - 1)}
-                />
-            </TouchableOpacity>}
-            <View style={{ width: scrollWidth }}>
-                <Animated.FlatList
+    const renderItem = useCallback(({item,index}:{item:number,index:number}) => {
+        return(
+            <NumberEngineItem 
+                itemWidth={itemWidth}
+                itemMargin={baseItemMargin}
+                item={item}
+                index={index}
+                currentIndex={currentIndex}
+                numberStyles={numberStyles}
+            />
+        )
+    },[currentIndex,numberArray])
+
+    return(
+        <View style={[styles.container,{...listContainerStyle,width:scrollWidth + totalButtonSize}]}>
+            {AddSideButtons ?  <RenderSideButton 
+                size={sideButtonOptions?.size}
+                color={sideButtonOptions?.color}
+                side={sideButtonOptions?.leftName ? sideButtonOptions?.leftName : 'chevron-left'}
+                onPress={() =>manualDecrement('deduct') }
+            />
+            :null}
+            {showIndicator ? <MaterialCommunityIcons style={styles.indictor} name={'chevron-down'} size={core_moderateScale(20)} {...indicatorStyle} />:null}
+            <FlatList
+                    contentContainerStyle={{alignItems:'center',justifyContent:'center',marginLeft:itemWidth,paddingRight:itemWidth*2}}
+                    style={{width:scrollWidth,alignSelf:'center'}}
                     data={numberArray}
+                    initialScrollIndex={defineStartIndex()}
                     viewabilityConfig={viewConfigRef.current}
                     onViewableItemsChanged={onViewRef.current}
                     keyExtractor={(item) => item.toString()}
-                    numColumns={1}
                     getItemLayout={getItemLayout}
                     showsHorizontalScrollIndicator={false}
-                    horizontal={true}
+                    horizontal
                     scrollEventThrottle={16}
                     decelerationRate={"fast"}
-                    snapToInterval={scrollWidth}
-                    onEndReachedThreshold={0.5}
+                    keyboardShouldPersistTaps='always'
+                    snapToAlignment={"center"}
+                    disableScrollViewPanResponder={true}
+                    snapToOffsets={[...Array(numberArray.length)]?.map((x, i) => (i * (itemWidth + (baseItemMargin*2)) ))}
                     ref={moveIndexRef}
-                    onScroll={Animated.event(
-                        [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-                        { useNativeDriver: true }
-                    )}
-                    renderItem={({ item, index }) => <RenderItem item={item} index={index}/>} />
-            </View>
-            {AddSideButtons && <TouchableOpacity onPress={() => setIndex(primeIndex + 1)}>
-                <RenderSideButton
-                    {...sideButtonStyle}
-                    side='chevron-right'
-                    onPress={() => setIndex(primeIndex + 1)}
+                    renderItem={renderItem}
                 />
-            </TouchableOpacity>}
+                {AddSideButtons ?  <RenderSideButton 
+                    size={sideButtonOptions?.size}
+                    color={sideButtonOptions?.color}
+                    side={sideButtonOptions?.rightName ? sideButtonOptions?.rightName : 'chevron-right'}
+                    onPress={() =>manualDecrement('add') }
+                />
+                :null}
         </View>
     )
 }
 
-export default React.memo(NumberScroll) as React.FunctionComponent<NumberScrollProps>
 
+export default NumberScroll
 
 const styles = StyleSheet.create({
     container: {
@@ -212,16 +179,14 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         height: 60,
     },
-    button:{
-        height:40,
-        width:120,
-        justifyContent: "center",
-        alignItems: "center",
-        borderRadius:15
+    model:{
+        width:core_moderateScale(150),
+        height:core_moderateScale(120),
     },
-    item: {
-        height: 60,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
+    indictor:{
+        position:'absolute',
+        top:-core_moderateScale(16),
+        alignSelf:'center',
+    }
+    
 });

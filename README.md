@@ -6,26 +6,35 @@ This library gives you the ability to create simple and beautiful number scrolle
 I am planing on addeing more functionality to this library soon. 
 
 # Props: 
+#### AddSideButtons?: boolean;
+   AddSideButtons:boolean - Adds clickable buttons at the sides of the scroll allowing incremental clicks
+#### pauseStart?: boolean; 
+    skip getValue at render
+#### min: number;
+    min:number - minimum value of the scroll
+#### max: number;
+    max:number - maximum value of the scroll
+#### startingValue?:number;
+    startingValue:number - The position value that the scroll will start at if not filled scroll will start at min
+#### startingIndex?:number:
+    startingIndex:number - The index value that the scroll will start at if not filled scroll will start at min (overrides startingValue)
+     
+#### getValue: (value: number) => void:
+    value:number - Callback returning the current value shown in the scroll
+     
+#### scrollerWidth?: number: 
+    Width of the scroll item
 
- letterSize?: Font size of the items (number)
- 
- AddSideButtons?: Adds clickable buttons at the sides of the scroll allowing incremental clicks (boolean)
- 
- pauseStart?: skip getValue at render (boolean)
- 
- min: *required - minimum value of the scroll (number)
+#### onPress?: () => void: 
+    - Callback on press of the button 
 
- max: *required -  maximum value of the scroll (number)
- 
- startingValue: *required -  The position value that the scroll will start at (number)
- 
- getValue: *required -  Callback returning the current value shown in the scroll (value: number) => void
- 
- scrollerWidth?: Width of the scroll item (number)
- 
- onPress?: Callback on press of the button () => void
- 
- injectValue? Inject a new value to the current scroll state,if the number changes the new change will be injected to the state (number)
+#### injectValue?:number:
+    injectValue:number - The current item you wish to auto scroll to (can be managed by state, updates on state update)
+#### fontStyle?:TextStyle:
+    injectValue:TextStyle - Style of the scroll font
 
- sideButtonColor? hex of the wanted side button color (string)
+#### sideButtonStyle:
+    {color:string,size:number} - object containing the color and size of the side buttons.
+#### sideButtonName?:
+    {left:string,right:string} - Object containing the icon name of the side buttons (supports MaterialCommunityIcons);
   
