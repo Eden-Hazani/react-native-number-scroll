@@ -9,12 +9,12 @@ import NumberEngineItem from "./NumberEngineItem";
 
 interface NumberScrollProps{
     /**
-     *  @param max:boolean
+     *  @param max:number
      *  The maximum number that can be reached
      */
     max:number;
     /**
-     * @param min:boolean
+     * @param min:number
      * The minimum number that can be reached
      *  
      * @default undefined
